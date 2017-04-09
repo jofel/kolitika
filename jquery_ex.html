@@ -12,9 +12,13 @@
   <h1>KOLITIKA</h1>
     <div id="description">
       Kolitikusnak lenni néha nem könnyű. Ha a színpadon állsz egy beszéd közben, nem árt, ha kikerülöd a szembe repülő tárgyakat. (amik karriered végét is jelenthetik)<br>
-      Próbáld túlélni a hullámokat, kezdésnek kapsz 0 Ft-ot.<br>
+      Próbáld túlélni a hullámokat. (6 pálya)<br><br>
+      PÉNZ: kezdésnek kapsz egy milliót, ebből gazdálkodhatsz.(1000 db 1000 Ft-os)<br>
+      IDŐ: A beszédedtől idővel falnak mennek az emeberek. 50x történhet ez meg a játék során.<br>
+      PARADICSOM: 50 ezerbe kerül az öltöny tisztítása.<br>
+      INJEKCIÓ: Ez a szer teljesen leszedál, az elvonó 200 ezerbe fáj.<br>
       Nyilakkal és az egérrel tudsz navigálni a színpadon.<br>
-      SPACE gombbal tudsz egy kis pénzt dobni a tömegnek, hogy lenyugodjon.<br>
+      SPACE gombbal tudsz egy kis pénzt dobni az embereknek(100 ezer Ft), hogy lenyugodjanak. <br>Ha jó zsebbe kerül akkor egyből vissza is térül.<br>
       <br>
 
       Sok sikert :)
@@ -24,7 +28,7 @@
       <h1 id="level">-</h1>
             <div id="field">
 
-                <h2>PONT:</h2>
+                <h2>PÉNZ:</h2>
                 <h1 id="demo">-</h1>
                 <br>
                 <h2> IDŐ:</h2>
@@ -106,6 +110,8 @@
         effectInjection = new sound("effect/NEGATIVE.wav");
         var effectBonus;
         effectBonus = new sound("effect/COINS.wav");
+        var effectBack;
+        effectBack = new sound("effect/BACK.mp3");
 
         //game
         var points=1000;
@@ -138,6 +144,7 @@
 
             } else {
               draw();
+              effectBack.play();
 
               finishLevel(level);
               if (nextLevel == true){
@@ -157,7 +164,7 @@
             dropTomato();
             drawTomato();
             removeTomato();
-
+            if(points<0 || wall==50) end = true;
 
             //hitMoney();
             //hitTomato();
@@ -388,10 +395,10 @@
                       people.x += people.s;
 
 
-                      if((people.x <= 0 || people.x >= 500) && wall<100 ){
+                      if((people.x <= 0 || people.x >= 500) && wall<50 ){
                           people.s = -people.s;
                           wall = wall + 1 ;
-                          document.getElementById("time").innerHTML = (100-wall);
+                          document.getElementById("time").innerHTML = (50-wall);
                       }
                   }
                 }
