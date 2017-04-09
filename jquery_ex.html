@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<link rel="stylesheet" type="text/css" href="css/style.css" />
+<head>
+    <meta charset="UTF-8">
+    <title>kolitika</title>
+    <script src="jquery-3.2.0.min.js"></script>
+
+</head>
+<body>
+<div id="app">
+  <h1>KOLITIKA</h1>
+    <div id="description">
+      Kolitikusnak lenni néha nem könnyű. Ha a színpadon állsz egy beszéd közben, nem árt, ha kikerülöd a szembe repülő tárgyakat. (amik karriered végét is jelenthetik)<br>
+      Próbáld túlélni a hullámokat, kezdésnek kapsz 0 Ft-ot.<br>
+      Nyilakkal és az egérrel tudsz navigálni a színpadon.<br>
+      SPACE gombbal tudsz egy kis pénzt dobni a tömegnek, hogy lenyugodjon.<br>
+      <br>
+
+      Sok sikert :)
+    </div>
+
+    <div id="game">
+      <h1 id="level">-</h1>
+            <div id="field">
+
+                <h2>PONT:</h2>
+                <h1 id="demo">-</h1>
+                <br>
+                <h2> IDŐ:</h2>
+                <h1 id="time">-</h1>
+
+                <h3>  Irányítás:
+                  <img src="img/arrows.png" width="200" height="100"/>
+                </h3>
+                <h3>  Pénz dobás:
+                  <img src="img/space.png" width="200" height="100"/>
+                </h3>
+            </div>
+    </div>
+
+    <div id="canvas">
+      <canvas id="canvas1" width="600" height="600" style="border: solid black 1px;"></canvas>
+      <script>
+        var canvas  = document.getElementById("canvas1");
+        var context = canvas.getContext("2d");
+        // billentyuzet esemeny figyelese az ablakra merten
+        window.addEventListener('keydown', userMove, false);
+        window.addEventListener('keydown', dropMoney, false);
+        // eger esemeny figyelese a vasznon
+        canvas.addEventListener('mousemove', userMouseMove, false);
+        canvas.addEventListener('click', dropMoney, false);
+
+        //background colors
+        var stageColor="#CC9933";
+        var bgColor="white";
+        var peopleColor="white";
+
+        //user
+        var userX =  250;
+        var userY = 10;
+        var userWidth = 100;
+        var userHeight = 100;
+        var userSpeed =2;
+        var userImg = new Image();
+        userImg.src = "img/faill.png"
+
+        //people
+        var peopleX =  0;
+        var peopleY = 500;
+        var peopleWidth = 80;
+        var peopleHeight = 80;
+        var peopleSpeed = 1;
+
+        //money
+        var moneyX = 0;
+        var moneyY = 0;
+        var moneyWidth=40;
+        var moneyHeight=40;
+
+        //tomato
+        var tomatoX = 0;
+        var tomatoY = 0;
+        var tomatoWidth=100;
+        var tomatoHeight=60;
+        var bonus = false;
+
+        //images
+        var peopleImg = new Image();
+        peopleImg.src = "img/shout.png";
+        var peopleHappyImg = new Image();
+        peopleHappyImg.src = "img/secretlaugh.png";
+        var moneyImg = new Image();
+        moneyImg.src = "img/money.png";
+        var tomatoImg = new Image();
+        tomatoImg.src = "img/tomato.png";
+        var injectionImg = new Image();
+        injectionImg.src = "img/injection.png";
+
+        //sounds
+        var effectTomato;
+        effectTomato = new sound("effect/SPLAT.wav");
+        var effectPickUp;
+        effectPickUp = new sound("effect/PICKUP.wav");
+        var effectInjection;
+        effectInjection = new sound("effect/NEGATIVE.wav");
+        var effectBonus;
+        effectBonus = new sound("effect/COINS.wav");
+
+        //game
+        var points=1000;
+        var level= 1;
+        var happyN = 0;
+        var wall = 0;
+        var nextLevel = false;
+        var end = false;
+
+        // tomb definicio a bombaknak
+        var moneyList = [];
+        var tomatoList = [];
+        var peopleList = [];
+
+        // animacio keszitesehez
+        var requestAnimationFrame = window.requestAnimationFrame ||
+              window.mozRequestAnimationFrame ||
+              window.webkitRequestAnimationFrame ||
+              window.msRequestAnimationFrame;
+
+        // az animacioert felelos fuggveny meghivasa
+        animate();
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // minden frameben meghivom a draw fuggvenyt
+            if (end == true){
+              document.getElementById("level").innerHTML = "VÉGE";
+
+            } else {
+              draw();
+
+              finishLevel(level);
+              if (nextLevel == true){
+                drawPeople2();
+              }
+            }
+
+        }
+
+        // az egyes kirajzolasokert felelos fuggveny
+        function draw() {
+            drawBackground();
+            drawUser();
+            drawPeople();
+            drawMoney();
+            removeMoney();
+            dropTomato();
+            drawTomato();
+            removeTomato();
+
+
+            //hitMoney();
+            //hitTomato();
+            //level2();
+
+        }
+
+
+/*********************   LEVEL   *************************/
+
+        /*
+        function level2() {
+            if (happy == level) {
+              happy = 0;
+              level = level + 1;
+              peopleY = peopleY+100;
+              drawPeople();
+
+              for (var i in peopleList) {
+                var people = peopleList[i];
+                if (people.happy) {
+                    context.drawImage(peopleHappyImg,
+                        people.x, people.y, peopleWidth, peopleHeight);
+                }else {
+                    context.drawImage(people.i, people.x, people.y, peopleWidth, peopleHeight);
+                    people.x += people.s;
+                    if((people.x <= 0 || people.x >= 500) && wall<40 ){
+                        people.s = -people.s;
+                        wall = wall + 1 ;
+                        document.getElementById("time").innerHTML = (40-wall);
+                    }
+                }
+              }
+
+            }
+            document.getElementById("demo").innerHTML = points;
+
+
+
+        }/*
+
+/*********************   USER   *************************/
+
+        // felhasználó kirajzolasa
+        function drawUser() {
+            // a hatter mindenkori ujrarajzolasa
+            //drawBackground();
+            context.drawImage(userImg,
+                userX, userY, userWidth, userHeight);
+
+        }
+
+        // kukac kirajzolasa
+        function userMove(e) {
+            // megnezem, hogy mi az aktualisan lenoymott gomb
+            var key = e.which;
+            // ha a jobbra nyil vagy balra nyil, akkor a kukacot a leptetem,
+            // de ek arra, hogy ne menjen le a vaszonrol
+            if (key == 39) {
+                if (userX < canvas.width - 100) {
+                    userX += 20;
+                }
+            } else if (key == 37) {
+                if (userX > 5) {
+                    userX -= 20;
+                }
+            }
+        }
+
+        // eger esemeny lekezelese
+        function userMouseMove(ev) {
+            // ugyelni kell arra, hogy az adott HTML elemnek (CANVAS) figyelembe vegyunk a pozicioit is,
+            // amikor meghatarozzuk az egerpoziciot, mielott azt atadjuk a kukact x poziciojanak es vizsgaljuk, hogy vasznon belul vagyunk-e
+            var rect = canvas.getBoundingClientRect();
+            var mouseX = ev.clientX - rect.left - 100;
+            if (mouseX > 0 && mouseX < canvas.width - 100) {
+                userX = mouseX;
+                // uj poziciot adunk meg, tehat szukseges a kukac ujrarajzolasa
+                drawUser();
+            }
+        }
+
+/*********************   MONEY   *************************/
+
+        // a listaba gyujtott bombak kirajzolasa
+        function drawMoney() {
+
+            for (var i in moneyList) {
+
+                var money = moneyList[i];
+                moneyX = money.x;
+                moneyY = money.y;
+
+                context.drawImage(moneyImg, money.x, money.y, moneyWidth, moneyHeight);
+
+                money.y += 6;
+            }
+
+        }
+
+
+        // random idokozonkent dobjunk le egy bombat. ehhez figyelembe kell venni a repulo aktualis x  es y poziciojat,
+        // hisz innen inditjuk a bombat. ezt a poziciot taruljuk az erre letrahozott tombben
+        function dropMoney(e) {
+        var key = e.which;
+
+            if ((key == 32 || key ==40) && moneyList.length == 0) {
+                moneyList.push({
+                    x: userX,
+                    y: userY
+                })
+                points = points -100;
+                document.getElementById("demo").innerHTML = points;
+            }
+        }
+
+        // ha leert a bomba vagy a listankban van mar kovetkezo, akkor vegyuk ki a listarol
+        function removeMoney() {
+            for (var i in peopleList) {
+                var people = peopleList[i];
+              if (moneyX+moneyWidth/2 > people.x && moneyX+moneyWidth/2 < (people.x+peopleWidth-10 ) &&
+                  moneyY > people.y-10 && moneyY<people.y + peopleHeight ) {
+                  points= points + 100;
+                  effectPickUp.play();
+                  moneyY = moneyY-100;
+                  document.getElementById("demo").innerHTML = points;
+                  moneyList.shift();
+                  peopleList[i].h = true;
+                  happy = happy + 1 ;
+
+              } else if (moneyY > 600) moneyList.shift();
+            }
+
+        }
+
+        /*function hitMoney(){
+            var executed = false;
+            if (moneyX+moneyWidth/2 > peopleX && moneyX+moneyWidth/2 < (peopleX+peopleWidth-10 ) &&
+                moneyY > peopleY-10){
+                moneyList.shift();
+                moneyY = moneyY-100;
+                happy=true;
+                points= points + 100;
+                document.getElementById("demo").innerHTML = points;
+            }
+        }*/
+
+/*********************   PEOPLE   *************************/
+
+        // Level1
+        peopleList.push({
+            x: peopleX,
+            y: peopleY,
+            i: peopleImg,
+            s: peopleSpeed,
+            h: happy = false
+
+        });
+
+
+        function finishLevel(level){
+
+          if (happyN == level && level != 6){
+              happyN = 0;
+              nextLevel = true;
+              console.log("next level: " + nextLevel);
+              console.log("happyN: " + happyN);
+              //document.getElementById("log").innerHTML = happyN;
+          }
+          else if (happyN == 10 && level == 6){
+              end = true;
+              context.font = "30px Arial";
+              context.fillText("VÉGE",280,280);
+          }
+          document.getElementById("level").innerHTML = level + ". pálya";
+
+        }
+
+        function drawPeople2(){
+          happyN = 0;
+          level = level + 1;
+          if(level == 6){
+            for (var i=level ; i>0; i--){
+              for (var j=level-2; j>=i; j--){
+                peopleList.push({
+                    x: peopleX+j*100,
+                    y: peopleY-i*50,
+                    i: peopleImg,
+                    s: peopleSpeed+3,
+                    h: happy = false
+
+                });
+              }
+            }
+
+          } else{
+            for (var i=0; i<level; i++){
+
+              peopleList.push({
+                  x: peopleX+i*100,
+                  y: peopleY,
+                  i: peopleImg,
+                  s: peopleSpeed + i/5,
+                  h: happy = false
+
+              });
+            }
+          }
+          nextLevel = false;
+        }
+
+
+
+
+
+        // emberek kirajzolasa
+        function drawPeople( ) {
+                for (var i in peopleList) {
+                  var people = peopleList[i];
+                  if (people.h) {
+                      delete peopleList[i];
+                      happyN = happyN+1;
+                      //document.getElementById("log").innerHTML = happyN;
+                    //  context.drawImage(peopleHappyImg,
+                      //    people.x, people.y, peopleWidth, peopleHeight);
+                  }else {
+                      context.drawImage(people.i, people.x, people.y, peopleWidth, peopleHeight);
+                      people.x += people.s;
+
+
+                      if((people.x <= 0 || people.x >= 500) && wall<100 ){
+                          people.s = -people.s;
+                          wall = wall + 1 ;
+                          document.getElementById("time").innerHTML = (100-wall);
+                      }
+                  }
+                }
+                /*context.drawImage(peopleImg,
+                    peopleX, peopleY, peopleWidth, peopleHeight);
+                peopleX += peopleSpeed;
+                if(peopleX <= 0 || peopleX >= 500){
+                    peopleSpeed = -peopleSpeed;
+                }*/
+
+        }
+        function deletePeople() {
+                for (var i in peopleList) {
+                  var people = peopleList[i];
+                  delete peopleList[i];
+                }
+                /*context.drawImage(peopleImg,
+                    peopleX, peopleY, peopleWidth, peopleHeight);
+                peopleX += peopleSpeed;
+                if(peopleX <= 0 || peopleX >= 500){
+                    peopleSpeed = -peopleSpeed;
+                }*/
+
+        }
+
+/*********************   TOMATO   *************************/
+
+        // a listaba gyujtott bombak kirajzolasa
+        function drawTomato() {
+            for (var i in tomatoList) {
+                var tomato = tomatoList[i];
+                tomatoX = tomato.x;
+                tomatoY = tomato.y;
+                //if (Math.random() > 0.99) {
+
+                context.drawImage(tomato.i, tomato.x, tomato.y, tomatoWidth, tomatoHeight);
+                tomato.y -= 6;
+                //}
+
+            }
+        }
+
+      /*  function hitTomato(){
+          for (var i in tomatoList) {
+            var tomato = tomatoList[i];
+            if (tomato.x+tomatoWidth/2 > userX && tomato.x+tomatoWidth/2 < (userX+userWidth-10 ) &&
+                tomato.y+40 < userY+userHeight && tomato.y > userY ){
+                tomatoList.shift();
+                delete tomatoList[0];
+                tomato.y = tomato.y+300;
+                if (bonus == true){
+                    points= points + 200;
+                } else   points= points - 50;
+                document.getElementById("demo").innerHTML = "  Pont " + points;
+            }
+          }
+
+        }
+*/
+
+            // random idokozonkent dobjunk le egy bombat. ehhez figyelembe kell venni a repulo aktualis x  es y poziciojat,
+        // hisz innen inditjuk a bombat. ezt a poziciot taruljuk az erre letrahozott tombben
+        function dropTomato() {
+          for( i in peopleList){
+            var people = peopleList[i];
+            if (Math.random() > 0.99 || userX < peopleX+1 && userX > peopleX) {
+                //if (tomatoList.length == 0 ){
+                tomatoList.push({
+                    x: people.x,
+                    y: people.y,
+                    i: tomatoImg
+                });
+                bonus=false;
+              //}
+
+            } else if (Math.random() > 0.999) {
+                //if (tomatoList.length == 0 ){
+                      tomatoList.push({
+                        x: people.x,
+                        y: people.y,
+                        i: injectionImg
+                    });
+                    bonus=true;
+                //}
+            }
+
+          }
+        }
+
+        // ha leert a bomba vagy a listankban van mar kovetkezo, akkor vegyuk ki a listarol
+        function removeTomato() {
+          for (var i in tomatoList) {
+              var tomato = tomatoList[i];
+            if (tomato.x+tomatoWidth/2 > userX && tomato.x+tomatoWidth/2 < (userX+userWidth-10 ) &&
+                tomato.y+40 < userY+userHeight && tomato.y > userY ) {
+                delete tomatoList[i];
+                if (tomato.i == injectionImg){
+                    points = points - 200;
+                    effectInjection.play();
+
+                } else   {
+                  points= points - 50;
+                  //effectTomato.stop();
+                  effectTomato.play();
+                }
+                document.getElementById("demo").innerHTML = points;
+            } else if (tomato.y+40<userY+userHeight) delete tomatoList[i];
+          }
+        }
+
+
+
+
+/*********************   background   *************************/
+
+        function drawBackground() {
+          //stage
+          context.fillStyle = stageColor;
+          context.fillRect(0, 0, 600, 100);
+          //bg
+          context.fillStyle = bgColor;
+          context.fillRect(0, 100, 600, 400);
+          //people
+          context.fillStyle = peopleColor;
+          context.fillRect(0, 500, 600, 600);
+
+        }
+
+
+/*********************   sounds   *************************/
+
+        function sound(src) {
+            this.sound = document.createElement("audio");
+            this.sound.src = src;
+            this.sound.setAttribute("preload", "auto");
+            this.sound.setAttribute("controls", "none");
+            this.sound.style.display = "none";
+            document.body.appendChild(this.sound);
+            this.play = function(){
+                this.sound.play();
+
+            }
+            this.stop = function(){
+                this.sound.pause();
+            }
+        }
+
+        //setInterval(animate, 100000/60)
+      </script>
+    </div>
+</div>
+
+
+</body>
+</html>

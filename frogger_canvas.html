@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Frogger v1.</title>
+</head>
+<body>
+<canvas id="gameArea" width="500" height="500" style="border:1px solid"></canvas>
+<script>
+    var c = document.getElementById('gameArea');
+    var ctx = c.getContext('2d');
+
+    var frog = new Image();
+    frog.src = "frogger.png";
+    frog.onload = addFrog;
+    var frogX = 0;
+    var frogY = 430;
+    var frogW;
+    var frogH;
+
+    window.addEventListener('keydown', moveFrog);
+
+    var requestAnimationFrame = window.requestAnimationFrame ||
+        window.mozRequestAnimationFrame ||
+        window.webkitRequestAnimationFrame ||
+        window.msRequestAnimationFrame;
+
+    animate();
+
+    function animate() {
+        requestAnimationFrame(animate);
+        ctx.clearRect(0, 0, 500, 500);
+        draw();
+    }
+
+    function draw() {
+        addFrog();
+    }
+
+    function addFrog() {
+        frogW = frog.width;
+        frogH = frog.height;
+        ctx.drawImage(frog, frogX, frogY, frogW, frogH);
+    }
+
+    function moveFrog(e) {
+        var key = e.which;
+
+        if (key == 37 & frogX > 0) {
+            frogX -= frogW;
+        } else if (key == 38 & frogY > frogH) {
+            frogY -= frogH;
+        } else if (key == 39 & frogX < c.width - 2*frogW) {
+            frogX += frogW;
+        } else if (key == 40 & frogY < c.height - frogH) {
+            frogY += frogH;
+        }
+
+    }
+
+</script>
+</body>
+</html>

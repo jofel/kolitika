@@ -1,0 +1,108 @@
+#app {
+    width: 1000px;
+    height: 830px;
+    margin: auto;
+    background-color: #FEFBEC;
+    border: 2px solid ;
+    border-radius: 10px;
+    padding: 20px;
+}
+
+#description {
+    text-align: justify;
+}
+
+#game {
+    width: 20%;
+    margin-left: 10px;
+    margin-right: 10px;
+    margin-top: 20px;
+    position: relative;
+    border: 2px solid ;
+    border-radius: 10px;
+    float: right;
+
+}
+
+#canvas {
+    width: 600px;
+    margin-left: 100px;
+    margin-top: 20px;
+    position: relative;
+    float: left;
+
+
+}
+
+#bg {
+    background-color: #FFFFFF;
+    height: 400px;
+    position: relative;
+    border-radius: 10px;
+}
+
+#field {
+    background-color: #CC9933;
+    height: 520px;
+    position: relative;
+    top: 0px;
+    border-radius: 10px;
+    float = right;
+}
+
+#user {
+    height: 85px;
+    position: absolute;
+    top: 0px;
+    left: 300px;
+}
+#people1 {
+    height: 85px;
+    position: absolute;
+    top: 300px;
+    left: 0px;
+}
+#people2 {
+    height: 85px;
+    position: absolute;
+    top: 300px;
+    left: 100px;
+}
+#people3 {
+    height: 85px;
+    position: absolute;
+    top: 300px;
+    left: 200px;
+}
+#people4 {
+    height: 85px;
+    position: absolute;
+    top: 300px;
+    left: 300px;
+}
+#people5 {
+    height: 85px;
+    position: absolute;
+    top: 300px;
+    left: 400px;
+}
+#people6 {
+    height: 85px;
+    position: absolute;
+    top: 300px;
+    left: 500px;
+}
+
+#buttons {
+
+}
+
+.button {
+    display: inline-block;
+    background-color: #f8e9c6;
+    padding: 8px;
+    border: 2px solid;
+    border-radius: 10px;
+    margin: 5px;
+    cursor: pointer;
+}
